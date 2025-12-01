@@ -1,0 +1,10 @@
+# Echo Engine Project – Canonical Style & Rules
+
+# This module is part of the Echo Engine Project,
+# a modular C++ engine designed for flexibility, maintainability, and scalability.
+
+# .gitignore
+
+bin/
+obj/
+.cache
