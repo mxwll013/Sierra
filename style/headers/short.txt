@@ -1,0 +1,6 @@
+--------------------------------------------------------------------------------
+Echo Engine Project - Apache 2.0 License
+https://echoengine.org
+Module : <module> - <purpose>
+Copyright (c) 2025 Echo Engine Project contributors
+--------------------------------------------------------------------------------
