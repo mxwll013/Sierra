@@ -75,6 +75,7 @@ Diagnostics:
     Remove:
       - bugprone-easily-swappable-parameters
       - cppcoreguidelines-pro-bounds-pointer-arithmetic
+      - cppcoreguidelines-pro-type-union-access
       - hicpp-braces-around-statements
       - hicpp-explicit-conversions
       - hicpp-use-auto

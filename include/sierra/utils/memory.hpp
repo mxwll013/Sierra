@@ -25,12 +25,13 @@
 // Copyright (c) 2025 Echo Engine Project contributors
 // --------------------------------------------------------------------------------
 
-#ifndef SRR_MEMORY_HPP
-#define SRR_MEMORY_HPP
+#ifndef SRR_UTILS_MEMORY_HPP
+#define SRR_UTILS_MEMORY_HPP
 
 #include <type_traits>
 
 inline namespace srr {
+namespace utils {
 
 template<typename T>
 concept Moveable = std::is_move_constructible_v<T>;
@@ -48,11 +49,12 @@ template<typename T>
 concept SafeCopyable = std::is_nothrow_copy_constructible_v<T>;
 
 template<typename T>
-concept SafeMovePolicy = !Moveable<T> || SafeMoveable<T>;
+concept SafeMovePolicy = Moveable<T> && SafeMoveable<T>;
 
 template<typename T>
 concept SafeCopyPolicy = !Copyable<T> || SafeCopyable<T>;
 
+} // namespace utils
 } // namespace srr
 
-#endif // SRR_MEMORY_HPP
+#endif // SRR_UTILS_MEMORY_HPP
