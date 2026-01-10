@@ -1,11 +1,11 @@
-# Sierra v0.1.0
+# Sierra v0.2.0
 
 A Style guide and shared tools library for the Echo Engine Project.
 
 ## What's new
 
 - _major_ - Official deployment
-- _minor_ - Style Guide deployment
+- _minor_ - Json utils
 - _patch_ - "
 
 From the [official Documentation](https://github.com/mxwll013/Echo/blob/main/docs/index.md):
