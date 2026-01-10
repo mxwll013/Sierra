@@ -1,6 +1,6 @@
 [
   {
-    "directory": "/Users/mxwll/Dev/EchoEngineProject/Sierra",
+    "directory": "/Users/mxwll/Dev/EchoEngineProject/Juliett/mdl/Sierra/",
     "arguments": ["-std=c++20", "-Iinclude/"],
     "file": "src/*.cpp",
     "output": "obj/sierra.o"

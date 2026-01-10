@@ -30,7 +30,7 @@
 
 #include "sierra/error.hpp"
 
-#include <string_view>
+#include <string>
 
 inline namespace srr {
 
@@ -41,11 +41,11 @@ public:
     [[nodiscard]] constexpr Status() noexcept;
     [[nodiscard]] constexpr Status(Err err) noexcept;
 
-    [[nodiscard]] constexpr bool             ok() const noexcept;
-    [[nodiscard]] constexpr bool             bad() const noexcept;
+    [[nodiscard]] constexpr bool        ok() const noexcept;
+    [[nodiscard]] constexpr bool        bad() const noexcept;
 
-    [[nodiscard]] constexpr Err              err() const noexcept;
-    [[nodiscard]] constexpr std::string_view msg() const noexcept;
+    [[nodiscard]] constexpr Err         err() const noexcept;
+    [[nodiscard]] constexpr std::string msg() const noexcept;
 
 private:
     Err err_;
@@ -55,13 +55,13 @@ constexpr Status::Status() noexcept : err_{ Err::OK } {}
 
 constexpr Status::Status(Err err) noexcept : err_{ err } {}
 
-constexpr bool Status::ok() const noexcept { return err_ == Err::OK; }
+constexpr bool        Status::ok() const noexcept { return err_ == Err::OK; }
 
-constexpr bool Status::bad() const noexcept { return err_ != Err::OK; }
+constexpr bool        Status::bad() const noexcept { return err_ != Err::OK; }
 
-constexpr Err  Status::err() const noexcept { return err_; }
+constexpr Err         Status::err() const noexcept { return err_; }
 
-constexpr std::string_view Status::msg() const noexcept { return lookup(err_); }
+constexpr std::string Status::msg() const noexcept { return lookupMsg(err_); }
 
 } // namespace srr
 

@@ -29,134 +29,184 @@
 #define SRR_RESULT_HPP
 
 #include "sierra/error.hpp"
-#include "sierra/memory.hpp"
+#include "sierra/utils/memory.hpp"
 
-#include <string_view>
+#include <string>
+#include <type_traits>
 
 inline namespace srr {
 
 template<typename T>
-concept ResultValue =
-    SafeDestructible<T> && SafeMovePolicy<T> && SafeCopyPolicy<T>;
+struct ResultStorage;
 
-template<ResultValue T>
-class Result;
+template<typename T>
+struct ResultStorage {
+    using Type = T;
 
-template<ResultValue T>
+    static void construct(Type &slot, T &&value) noexcept {
+        new (&slot) T{ std::move(value) };
+    }
+
+    static void construct(Type &slot, const T &value) noexcept {
+        new (&slot) T{ value };
+    }
+
+    static void destroy(Type &slot) noexcept { slot.~T(); }
+
+    static T   &access(Type &slot) noexcept { return slot; }
+
+    // access() is a non-owning view into Result storage
+    // NOLINTNEXTLINE(bugprone-return-const-ref-from-parameter)
+    static const T &access(const Type &slot) noexcept { return slot; }
+};
+
+template<typename T>
+struct ResultStorage<T &> {
+    using Type = std::add_pointer_t<T>;
+
+    static void construct(Type &slot, T &value) noexcept { slot = &value; }
+
+    static void destroy([[maybe_unused]] Type &slot) noexcept {}
+
+    static T   &access(Type slot) noexcept { return *slot; }
+};
+
+template<typename T>
+concept ResultStorable =
+    utils::SafeDestructible<typename ResultStorage<T>::Type> &&
+    utils::SafeMovePolicy<T> &&
+    utils::SafeCopyPolicy<T>;
+
+template<ResultStorable T>
 class [[nodiscard]] Result {
 public:
-    using ValueType = T;
+    using ValueType  = T;
+    using Storage    = ResultStorage<T>;
+    using StoredType = typename Storage::Type;
 
     [[nodiscard]] constexpr Result(Err err) noexcept;
 
     [[nodiscard]] constexpr Result(T &&value) noexcept;
 
     [[nodiscard]] constexpr Result(const T &value) noexcept
-        requires SafeCopyable<T>;
+        requires utils::SafeCopyable<T>;
 
     [[nodiscard]] constexpr Result(Result &&result) noexcept;
     [[nodiscard]] constexpr Result(const Result &result) noexcept
-        requires SafeCopyable<T>;
+        requires utils::SafeCopyable<T>;
 
     Result &operator=(Result &&result)      = delete;
     Result &operator=(const Result &result) = delete;
 
     constexpr ~Result() noexcept;
 
-    [[nodiscard]] constexpr bool             ok() const noexcept;
-    [[nodiscard]] constexpr bool             bad() const noexcept;
+    [[nodiscard]] constexpr bool        ok() const noexcept;
+    [[nodiscard]] constexpr bool        bad() const noexcept;
 
-    [[nodiscard]] constexpr Err              err() const noexcept;
+    [[nodiscard]] constexpr Err         err() const noexcept;
 
-    [[nodiscard]] constexpr T               &value()               &noexcept;
-    [[nodiscard]] constexpr const T         &value() const         &noexcept;
+    [[nodiscard]] constexpr T          &val()          &noexcept;
+    [[nodiscard]] constexpr const T    &val() const    &noexcept;
+    [[nodiscard]] constexpr T         &&val()         &&noexcept;
 
-    [[nodiscard]] constexpr T              &&value()              &&noexcept;
-
-    [[nodiscard]] constexpr std::string_view msg() const noexcept;
+    [[nodiscard]] constexpr std::string msg() const noexcept;
 
 private:
-    union Data {
-        T   value;
-        Err err;
-    } data_;
-
     bool ok_;
+
+    union Data {
+        Err        err{};
+        StoredType value;
+
+        constexpr Data() noexcept {}
+
+        Data(const Data &)            = delete;
+        Data(Data &&)                 = delete;
+        Data &operator=(const Data &) = delete;
+        Data &operator=(Data &&)      = delete;
+
+        ~Data() noexcept {}
+
+    } data_;
 };
 
-template<ResultValue T>
-constexpr Result<T>::Result(Err err) noexcept : ok_{ false } {
+// IMPL ---
+
+template<ResultStorable T>
+constexpr Result<T>::Result(Err err) noexcept : ok_{ false }, data_{} {
     new (&data_.err) Err{ err };
 }
 
-template<ResultValue T>
-constexpr Result<T>::Result(T &&value) noexcept : ok_{ true } {
-    new (&data_.value) T{ std::move(value) };
+template<ResultStorable T>
+constexpr Result<T>::Result(T &&value) noexcept : ok_{ true }, data_{} {
+    Storage::construct(data_.value, std::move(value));
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr Result<T>::Result(const T &value) noexcept
-    requires SafeCopyable<T>
-    : ok_{ true } {
-    new (&data_.value) T{ value };
+    requires utils::SafeCopyable<T>
+    : ok_{ true }, data_{} {
+    Storage::construct(data_.value, value);
 }
 
-template<ResultValue T>
-constexpr Result<T>::Result(Result &&result) noexcept : ok_{ result.ok_ } {
+template<ResultStorable T>
+constexpr Result<T>::Result(Result &&result) noexcept :
+    ok_{ result.ok_ },
+    data_{} {
     if (ok_)
-        new (&data_.value) T{ std::move(result.data_.value) };
+        Storage::construct(data_.value, std::move(result.data_.value));
     else
         new (&data_.err) Err{ result.data_.err };
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr Result<T>::Result(const Result &result) noexcept
-    requires SafeCopyable<T>
-    : ok_{ result.ok_ } {
+    requires utils::SafeCopyable<T>
+    : ok_{ result.ok_ }, data_{} {
     if (ok_)
-        new (&data_.value) T{ result.data_.value };
+        Storage::construct(data_.value, result.data_.value);
     else
         new (&data_.err) Err{ result.data_.err };
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr Result<T>::~Result() noexcept {
-    if (ok_) data_.value.~T();
+    if (ok_) Storage::destroy(data_.value);
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr bool Result<T>::ok() const noexcept {
     return ok_;
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr bool Result<T>::bad() const noexcept {
     return !ok_;
 }
 
-template<ResultValue T>
+template<ResultStorable T>
 constexpr Err Result<T>::err() const noexcept {
     return data_.err;
 }
 
-template<ResultValue T>
-constexpr T &Result<T>::value() & noexcept {
-    return data_.value;
+template<ResultStorable T>
+constexpr T &Result<T>::val() & noexcept {
+    return Storage::access(data_.value);
 }
 
-template<ResultValue T>
-constexpr const T &Result<T>::value() const & noexcept {
-    return data_.value;
+template<ResultStorable T>
+constexpr const T &Result<T>::val() const & noexcept {
+    return Storage::access(data_.value);
 }
 
-template<ResultValue T>
-constexpr T &&Result<T>::value() && noexcept {
-    return std::move(data_.value);
+template<ResultStorable T>
+constexpr T &&Result<T>::val() && noexcept {
+    return std::move(Storage::access(data_.value));
 }
 
-template<ResultValue T>
-constexpr std::string_view Result<T>::msg() const noexcept {
-    return lookup(data_.err);
+template<ResultStorable T>
+constexpr std::string Result<T>::msg() const noexcept {
+    return lookupMsg(data_.err);
 }
 
 } // namespace srr

@@ -15,4 +15,4 @@
 bin/
 obj/
 .cache/
-compile_comands.json
+compile_commands.json
