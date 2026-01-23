@@ -1,29 +1,31 @@
-// --------------------------------------------------------------------------------
-// Echo Engine Project - Apache 2.0 License
-
-// Part of the Echo Engine Project, a modular C++ engine designed for
-// flexibility, maintainability, and scalability.
-
-// To ensure consistency across all modules, the Sierra Style Guide establishes
-// comprehensive coding conventions, formatting rules, and tooling
-// configurations. This includes rules for C++ formatting, language server
-// behavior, static analysis, and guidelines for naming, structure and module
-// interaction.
-
-// All contributors are expected to adhere to the Sierra Style Guide,
-// ensuring that code across the entire ecosystem is readable, maintainable,
-// and compatible with the project’s tools and pipelines.
-
-// By following these conventions, developers help maintain a cohesive
-// and professional codebase across the Echo Engine Project.
-
-// - https://echoengine.org
-// - https://docs.echoengine.org
-// - https://style.echoengine.org
-
-// Module : Sierra - Shared
-// Copyright (c) 2025 Echo Engine Project contributors
-// --------------------------------------------------------------------------------
+/*
+ * -----------------------------------------------------------------------------
+ * Echo Engine Project - Apache 2.0 License
+ *
+ * Part of the Echo Engine Project, a modular C++ engine designed for
+ * flexibility, maintainability, and scalability.
+ *
+ * To ensure consistency across all modules, the Sierra Style Guide establishes
+ * comprehensive coding conventions, formatting rules, and tooling
+ * configurations. This includes rules for C++ formatting, language server
+ * behavior, static analysis, and guidelines for naming, structure and module
+ * interaction.
+ *
+ * All contributors are expected to adhere to the Sierra Style Guide,
+ * ensuring that code across the entire ecosystem is readable, maintainable,
+ * and compatible with the project’s tools and pipelines.
+ *
+ * By following these conventions, developers help maintain a cohesive
+ * and professional codebase across the Echo Engine Project.
+ *
+ * - https://echoengine.org
+ * - https://docs.echoengine.org
+ * - https://style.echoengine.org
+ *
+ * Module : Sierra - Shared
+ * Copyright (c) 2026 Echo Engine Project contributors
+ * -----------------------------------------------------------------------------
+ */
 
 #ifndef SRR_ERROR_HPP
 #define SRR_ERROR_HPP
@@ -73,6 +75,20 @@ enum class Err : u8 {
     JSON_SYNTAX_DBL_KEY,
     JSON_SYNTAX_DBL_ROOT,
 
+    // cli : parse
+    CLI_BAD_TOKEN,
+
+    // cli : usage
+    CLI_MISSING_ARGS,
+    CLI_TOO_MANY_ARGS,
+    CLI_UNKNOWN_CMD,
+    CLI_UNKNOWN_OPT,
+    CLI_UNKNOWN_SHRT,
+    CLI_DBL_OPT,
+    CLI_EMPTY_OPT_VAL,
+    CLI_BAD_OPT_VAL,
+    CLI_NOT_CALLABLE,
+
     ERR_COUNT,
 };
 
@@ -81,12 +97,14 @@ enum class ErrType : u8 {
 
     FSYS,
     JSON,
+    CLI,
 };
 
 enum class ErrSubtype : u8 {
     NONE = 0,
 
     ACCESS,
+    USAGE,
     CAST,
     PARSE,
     SYNTAX,
@@ -108,83 +126,189 @@ struct ErrInfo {
     case Err::NOT_IMPLEMENTED: return { .msg = "Not implemented" };
 
     case Err::INDEX_OUT_OF_RANGE:
-        return { .msg = "Index out of range", .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "Index out of range",
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::NO_SUCH_KEY:
-        return { .msg = "No such key", .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "No such key",
+            .subtype = ErrSubtype::ACCESS,
+        };
 
     case Err::INVALID_NUMBER:
-        return { .msg = "Invalid number", .subtype = ErrSubtype::PARSE };
+        return {
+            .msg     = "Invalid number",
+            .subtype = ErrSubtype::PARSE,
+        };
 
     case Err::FS_NO_SUCH_PATH:
-        return { .msg     = "No such file or directory",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "No such file or directory",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::FS_NO_SUCH_FILE:
-        return { .msg     = "No such file",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "No such file",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::FS_NO_SUCH_DIR:
-        return { .msg     = "No such directory",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "No such directory",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::FS_NO_SUCH_PARENT:
-        return { .msg     = "No such parent directory",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "No such parent directory",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
 
     case Err::FS_FILE_ALREADY_EXISTS:
-        return { .msg     = "File already exists",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "File already exists",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::FS_DIR_ALREADY_EXISTS:
-        return { .msg     = "Directory already exists",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "Directory already exists",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
     case Err::FS_FAILED_TO_OPEN:
-        return { .msg     = "Failed to open file",
-                 .type    = ErrType::FSYS,
-                 .subtype = ErrSubtype::ACCESS };
+        return {
+            .msg     = "Failed to open file",
+            .type    = ErrType::FSYS,
+            .subtype = ErrSubtype::ACCESS,
+        };
 
     case Err::JSON_BAD_CAST:
-        return { .msg     = "Attempted to cast to wrong type",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::CAST };
+        return {
+            .msg     = "Attempted to cast to wrong type",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::CAST,
+        };
     case Err::JSON_BAD_SUBTYPE:
-        return { .msg     = "Attempted to cast to wrong subtype",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::CAST };
+        return {
+            .msg     = "Attempted to cast to wrong subtype",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::CAST,
+        };
     case Err::JSON_BAD_ASSUMED:
-        return { .msg     = "Assumed (implicit cast) to wrong type",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::CAST };
+        return {
+            .msg     = "Assumed (implicit cast) to wrong type",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::CAST,
+        };
 
     case Err::JSON_BAD_TOKEN:
-        return { .msg     = "Invalid token",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::PARSE };
+        return {
+            .msg     = "Invalid token",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::PARSE,
+        };
 
     case Err::JSON_SYNTAX_EXP_VALUE:
-        return { .msg     = "Was expecting value",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::SYNTAX };
+        return {
+            .msg     = "Was expecting value",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::SYNTAX,
+        };
     case Err::JSON_SYNTAX_EXP_KEY:
-        return { .msg     = "Was expecting key",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::SYNTAX };
+        return {
+            .msg     = "Was expecting key",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::SYNTAX,
+        };
     case Err::JSON_SYNTAX_EXP_SEP:
-        return { .msg     = "Was expecting separator",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::SYNTAX };
+        return {
+            .msg     = "Was expecting separator",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::SYNTAX,
+        };
     case Err::JSON_SYNTAX_DBL_KEY:
-        return { .msg     = "Key was specified twice",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::SYNTAX };
+        return {
+            .msg     = "Key was specified twice",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::SYNTAX,
+        };
     case Err::JSON_SYNTAX_DBL_ROOT:
-        return { .msg     = "Tree has multiple root objects",
-                 .type    = ErrType::JSON,
-                 .subtype = ErrSubtype::SYNTAX };
+        return {
+            .msg     = "Tree has multiple root objects",
+            .type    = ErrType::JSON,
+            .subtype = ErrSubtype::SYNTAX,
+        };
 
-    case Err::ERR_COUNT: return { .msg = "Unknown error" };
+    case Err::CLI_BAD_TOKEN:
+        return {
+            .msg     = "Invalid token",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::PARSE,
+        };
+
+    case Err::CLI_MISSING_ARGS:
+        return {
+            .msg     = "Missing argument(s)",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_TOO_MANY_ARGS:
+        return {
+            .msg     = "Too many argument(s)",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_UNKNOWN_CMD:
+        return {
+            .msg     = "Unknown command",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_UNKNOWN_OPT:
+        return {
+            .msg     = "Unknown option",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_UNKNOWN_SHRT:
+        return {
+            .msg     = "Unknown shorthand option",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_DBL_OPT:
+        return {
+            .msg     = "Option specified twice",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_EMPTY_OPT_VAL:
+        return {
+            .msg     = "Option was not specified a value",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_BAD_OPT_VAL:
+        return {
+            .msg     = "Option was specified an invalid value",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+    case Err::CLI_NOT_CALLABLE:
+        return {
+            .msg     = "Command is not callable",
+            .type    = ErrType::CLI,
+            .subtype = ErrSubtype::USAGE,
+        };
+
+    case Err::ERR_COUNT:
+        return {
+            .msg = "Unknown error",
+        };
     }
 }
 
@@ -209,6 +333,7 @@ struct ErrInfo {
     case ErrType::NONE: return "";
     case ErrType::FSYS: return "[fsys]";
     case ErrType::JSON: return "[json]";
+    case ErrType::CLI : return "[cli]";
     }
 }
 
@@ -217,6 +342,7 @@ struct ErrInfo {
     switch (type) {
     case ErrSubtype::NONE  : return "";
     case ErrSubtype::ACCESS: return "[access]";
+    case ErrSubtype::USAGE : return "[usage]";
     case ErrSubtype::CAST  : return "[cast]";
     case ErrSubtype::PARSE : return "[parse]";
     case ErrSubtype::SYNTAX: return "[syntax]";
@@ -230,9 +356,11 @@ struct ErrInfo {
     msg += lookupPrefix(info.type);
     msg += lookupPrefix(info.subtype);
 
-    if (!msg.empty()) msg += " ";
+    if (!msg.empty()) msg += ' ';
 
     msg += info.msg;
+
+    msg += '.';
 
     return msg;
 }

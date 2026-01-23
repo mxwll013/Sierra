@@ -1,4 +1,4 @@
---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 Echo Engine Project - Apache 2.0 License
 
 Part of the Echo Engine Project, a modular C++ engine designed for
@@ -22,4 +22,4 @@ and professional codebase across the Echo Engine Project.
 
 Module : <module> - <purpose>
 Copyright (c) 2025 Echo Engine Project contributors
---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------
