@@ -52,9 +52,9 @@ struct [[nodiscard]] Sys {
     #include <unistd.h>
 
 template<Sink S>
-[[nodiscard]] consteval Fd getFd() noexcept {
+[[nodiscard]] consteval Fd fd() noexcept {
     switch (S) {
-    case Sink::CONSOLE_OUT: return STD_IN;
+    case Sink::CONSOLE_IN : return STD_IN;
     case Sink::CONSOLE_OUT: return STD_OUT;
     case Sink::CONSOLE_ERR: return STD_ERR;
     }
@@ -62,7 +62,7 @@ template<Sink S>
 
 template<Sink S>
 inline void Sys::write(const char *buf, usize len) noexcept {
-    const Fd dst = getFd<S>();
+    const Fd dst = fd<S>();
     ::write(dst, buf, len);
 }
 
